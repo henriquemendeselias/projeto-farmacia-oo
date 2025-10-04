@@ -79,9 +79,9 @@ class Venda:
         if item in self.__itens:
             self.__itens.remove(item)
             self._recalcular_total()
-            print("produto adicio...")
+            print(f"Produto{item.produto.nome} removido com sucesso")
         else:
-            print("não foi...")
+            print(f"Produto{item.produto.nome} não encontrado na venda.")
 
     def _recalcular_total(self) -> None:
         total_atualizado = 0.0
@@ -91,7 +91,7 @@ class Venda:
 
         self.__valor_total = total_atualizado
     
-    def finalizar_venda(self, estoque, historico) -> None:
+    def finalizar_venda(self, estoque, historico: "HistoricoVendas") -> None:
         if self.__status != "ATIVA":
             print("impossível finalizar venda não ativa")
             return
@@ -102,7 +102,7 @@ class Venda:
         self.__status = "FINALIZADA"
         print(f"status da venda {self.id_venda} atualizada para 'FINALIZADA'.")
 
-        #historico.registrarVenda(self)
+        historico.registrar_venda(self)
 
     def cancelar_venda(self, estoque) -> None:
         if self.__status == "ATIVA" or self.__status == "PAUSADA":
@@ -124,6 +124,7 @@ class Venda:
     def retomar_venda(self) -> None:
         if self.__status == "PAUSADA":
             self.__status = "ATIVA"
+            print("venda retomada")
         else:
             print("impossível retomar esta venda")
 
@@ -183,3 +184,131 @@ class Venda:
         )
 
         return cabecalho + itens_str + rodape
+    
+
+class Orcamento:
+    _contador_id = 0
+    def __init__(self, funcionario: Funcionario, cliente: Cliente):
+        Orcamento._contador_id += 1
+        self.__id_orcamento = Orcamento._contador_id
+        self.__cliente = cliente
+        self.__funcionario = funcionario
+        self.__data_hora = datetime.now()
+        self.__itens = []
+        self.__valor_total = 0.0
+    
+    
+    @property
+    def id_orcamento(self) -> int:
+        return self.__id_orcamento
+    
+    @property
+    def valor_total(self) -> float:
+        return self.__valor_total
+
+    @property
+    def cliente(self) -> Cliente:
+        return self.__cliente
+    
+    @property
+    def funcionario(self) -> Funcionario:
+        return self.__funcionario
+
+    @property
+    def data_hora(self) -> datetime:
+        return self.__data_hora
+
+    @property
+    def itens(self) -> list:
+        return self.__itens
+
+    def _recalcular_total(self) -> None:
+        total_atualizado = 0.0
+        for item in self.__itens:
+            total_atualizado += item.calcular_subtotal()
+            
+        self.__valor_total = total_atualizado
+
+    def adicionar_item(self, produto: Produto, quantidade: int) -> None:
+        novo_item = ItemVenda(produto, quantidade)
+        self.__itens.append(novo_item)
+        self._recalcular_total()
+        
+    def remover_item(self, item: ItemVenda) -> None:
+        if item in self.__itens:
+            self.__itens.remove(item)
+            self._recalcular_total()
+        else:
+            print("produto não encontrado no orçamento")
+
+    def converter_em_venda(self) -> "Venda":
+        orcamento_convertido = Venda(self.funcionario, self.cliente)
+
+        if self.itens:
+            orcamento_convertido.itens.extend(self.itens)
+
+        orcamento_convertido._recalcular_total()
+
+        print(f"orcamento {self.id_orcamento} convertido na venda {orcamento_convertido.id_venda}")
+
+        return orcamento_convertido
+
+    def __str__(self) -> str:
+        cabecalho = (
+            f"--- Orçamento ID: {self.id_orcamento} ---\n"
+            f"Data: {self.data_hora.strftime('%d/%m/%Y %H:%M:%S')}\n"
+            f"Cliente: {self.cliente.nome}\n"
+            f"Funcionário: {self.funcionario.nome}\n"
+            f"{'-'*40}\n"
+        )
+        itens_str = "Itens:\n"
+        if not self.itens:
+            itens_str = "Nenhum item no orçamento.\n"
+        else:
+            for item in self.itens:
+                itens_str += f"  - {item}\n"
+    
+        rodape = (
+            f"{'-'*40}\n"
+            f"Valor Total: R$ {self.valor_total:.2f}\n"
+            f"{'='*40}"
+        )
+        return cabecalho + itens_str + rodape  
+
+class HistoricoVendas:
+    def __init__(self):
+        self.__vendas_finalizadas = []
+    
+    def registrar_venda(self, venda: Venda) -> None:
+        if venda.status != "FINALIZADA":
+            print("Impoossível registrar venda não finalizada")
+            return
+        else:
+            self.__vendas_finalizadas.append(venda)
+            print("Venda registrada")
+
+    def buscar_venda_por_id(self, id_venda_para_busca: int) -> Venda | None:
+        for venda in self.__vendas_finalizadas:
+            if venda.id_venda == id_venda_para_busca:
+                return venda
+        return None
+    
+
+    def consultar_historico_cliente(self, cliente: Cliente) -> list:
+        compras_do_cliente = []
+        for venda in self.__vendas_finalizadas:
+            if venda.cliente == cliente:
+                compras_do_cliente.append(venda)
+            
+        return compras_do_cliente
+        
+    def consultar_historico_funcionario(self, funcionario: Funcionario) -> list:
+        vendas_do_funcionario = []
+        for venda in self.__vendas_finalizadas:
+            if venda.funcionario == funcionario:
+                vendas_do_funcionario.append(venda)
+            
+        return vendas_do_funcionario
+
+    def __str__(self):
+        return f"histórico contendo {len(self.__vendas_finalizadas)} vendas registradas."

@@ -73,7 +73,7 @@ class Estoque:
 
     def registrar_perda(self, lote: Lote, quantidade: int, motivo: str) -> None:
         if quantidade <= 0 or quantidade > lote.quantidade:
-            print("quantidade invalida ou maior que o estoque do lote")
+            print("Quantidade inválida ou maior que o estoque do lote")
             return
         
         lote_encontrado = False
