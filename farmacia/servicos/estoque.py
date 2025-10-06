@@ -61,10 +61,6 @@ class Estoque:
         
         lista_de_lotes = self.__inventario[chave_produto]["lotes"]
 
-        if not lista_de_lotes:
-            print(f"produto: {produto.nome} não possui lotes")
-            return 
-
         lista_de_lotes.sort(key=lambda lote: lote.data_validade, reverse=True)
 
         lote_alvo = lista_de_lotes[0]
@@ -72,10 +68,6 @@ class Estoque:
         print(f"Estornado {quantidade} un. para o lote {lote_alvo.codigo_lote} do produto '{produto.nome}'.")
 
     def registrar_perda(self, lote: Lote, quantidade: int, motivo: str) -> None:
-        if quantidade <= 0 or quantidade > lote.quantidade:
-            print("Quantidade inválida ou maior que o estoque do lote")
-            return
-        
         lote_encontrado = False
         for dados_produtos in self.__inventario.values():
             if lote in dados_produtos["lotes"]:
@@ -84,6 +76,10 @@ class Estoque:
 
         if not lote_encontrado:
             print(f"O lote {lote.codigo_lote} não foi encontrado no inventário.")
+            return
+        
+        if quantidade <= 0 or quantidade > lote.quantidade:
+            print("Quantidade inválida ou maior que o estoque do lote")
             return
         
         lote.quantidade -= quantidade

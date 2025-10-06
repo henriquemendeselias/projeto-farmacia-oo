@@ -79,9 +79,9 @@ class Venda:
         if item in self.__itens:
             self.__itens.remove(item)
             self._recalcular_total()
-            print(f"Produto{item.produto.nome} removido com sucesso")
+            print(f"Produto {item.produto.nome} removido com sucesso")
         else:
-            print(f"Produto{item.produto.nome} não encontrado na venda.")
+            print(f"Produto {item.produto.nome} não encontrado na venda.")
 
     def _recalcular_total(self) -> None:
         total_atualizado = 0.0
@@ -92,6 +92,10 @@ class Venda:
         self.__valor_total = total_atualizado
     
     def finalizar_venda(self, estoque, historico: "HistoricoVendas") -> None:
+        if not self.__itens:
+            print("impossível finalizar venda sem itens")
+            return
+        
         if self.__status != "ATIVA":
             print("impossível finalizar venda não ativa")
             return
@@ -113,6 +117,8 @@ class Venda:
                 estoque.estornar_item(item.produto, item.quantidade)
             self.__status = "CANCELADA"
             print(f"venda{self.id_venda} estornada com sucesso")
+        else:
+            print(f"venda {self.id_venda} já cancelada")
     
     def pausar_venda(self) -> None:
         if self.__status == "ATIVA":
@@ -140,6 +146,10 @@ class Venda:
         print(f"desconto de {percentual}% aplicado. novo total: R$ {self.__valor_total:.2f}")
     
     def processar_pagamento(self, forma: str, valor: float) -> bool:
+        if self.__valor_total == 0:
+            print("Venda sem itens ou com valor zerado, pagamento não aplicável")
+            return False
+        
         if self.__status != "ATIVA":
             print("pagamento não pode ser processado para uma venda que não está ativa.")
             return False
@@ -278,7 +288,11 @@ class Orcamento:
 class HistoricoVendas:
     def __init__(self):
         self.__vendas_finalizadas = []
-    
+
+    @property 
+    def vendas(self) -> list:
+        return self.__vendas_finalizadas
+        
     def registrar_venda(self, venda: Venda) -> None:
         if venda.status != "FINALIZADA":
             print("Impoossível registrar venda não finalizada")
