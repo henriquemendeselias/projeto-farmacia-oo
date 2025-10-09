@@ -17,9 +17,11 @@ class Pessoa(ABC):
         return self._cpf
     
 class Funcionario(Pessoa):
-    def __init__(self, nome: str, cpf: str, matricula: str):
+    _contador_matricula = 0
+    def __init__(self, nome: str, cpf: str):
         super().__init__(nome, cpf)
-        self.__matricula = matricula
+        Funcionario._contador_matricula += 1
+        self.__matricula = f"F{Funcionario._contador_matricula:03d}"
     
     def __str__(self) -> str: 
         info_base = super().__str__()
@@ -30,9 +32,11 @@ class Funcionario(Pessoa):
         return self.__matricula
     
 class Cliente(Pessoa):
-    def __init__(self, nome: str, cpf: str, id_cliente: int):
+    _contador_id = 0
+    def __init__(self, nome: str, cpf: str):
         super().__init__(nome, cpf)
-        self.__id_cliente = id_cliente
+        Cliente._contador_id += 1
+        self.__id_cliente = Cliente._contador_id
 
     def __str__(self) -> str:
         info_base = super().__str__()

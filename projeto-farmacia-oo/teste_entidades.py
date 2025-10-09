@@ -3,8 +3,8 @@ from farmacia.entidades.produto import Medicamento, Perfumaria, Lote
 from datetime import date
 
 print("Testando a criação das pessoas")
-funcionario = Funcionario("Funcionario", "111.111.111-11", "F001")
-cliente = Cliente("Cliente", "000.000.000-00", 1)
+funcionario = Funcionario("Funcionario", "111.111.111-11")
+cliente = Cliente("Cliente", "000.000.000-00")
 print(50*'=')
 print(funcionario)
 print(cliente)

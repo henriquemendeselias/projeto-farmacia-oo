@@ -6,8 +6,8 @@ from datetime import date
 
 estoque = Estoque()
 historico = HistoricoVendas()
-func_ana = Funcionario("Ana", "111.111.111-11", "F001")
-cliente_henrique = Cliente("Henrique","000.000.000-00",1)
+func_ana = Funcionario("Ana", "111.111.111-11")
+cliente_henrique = Cliente("Henrique","000.000.000-00")
 dipirona = Medicamento("dip001", "Dipirona", 5.99, False)
 dorflex = Medicamento("dflx001","Dorflex", 7.99, False)
 shampoo = Perfumaria("sh001","Shampoo",10.99,"300ML")
