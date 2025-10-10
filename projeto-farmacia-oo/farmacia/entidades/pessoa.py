@@ -16,6 +16,20 @@ class Pessoa(ABC):
     def cpf(self) -> str:
         return self._cpf
     
+    @nome.setter
+    def nome(self, novo_nome: str):
+        if novo_nome and novo_nome.strip():
+            self._nome = novo_nome
+        else:
+            print("O nome não pode ser vazio.")
+
+    @cpf.setter
+    def cpf(self, novo_cpf: str):
+        if novo_cpf and novo_cpf.strip():
+            self._cpf = novo_cpf
+        else:
+            print("[ERRO] O CPF não pode ser vazio.")
+    
 class Funcionario(Pessoa):
     _contador_matricula = 0
     def __init__(self, nome: str, cpf: str):
