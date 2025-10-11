@@ -22,6 +22,20 @@ class Produto(ABC):
     @property
     def preco(self) -> float:
         return self._preco
+    
+    @nome.setter
+    def nome(self, novo_nome: str):
+        if novo_nome and novo_nome.strip():
+            self._nome = novo_nome
+        else:
+            print("O nome não pode ser vazio.")
+
+    @preco.setter
+    def preco(self, novo_preco: float):
+        if novo_preco > 0:
+            self._preco = novo_preco
+        else:
+            print("O preço deve ser um valor positivo.")
 
 class Medicamento(Produto):
     def __init__(self, codigo: str, nome: str, preco: float, receita_obrigatoria: bool):
@@ -36,6 +50,18 @@ class Medicamento(Produto):
     @property
     def receita_obrigatoria(self) -> bool:
         return self.__receita_obrigatoria
+    
+    @property
+    def codigo(self):
+        return self._codigo
+    
+    @codigo.setter
+    def codigo(self, novo_codigo: str, ):
+        if novo_codigo and novo_codigo.strip():
+            self._codigo = novo_codigo
+        else:
+            print("O nome não pode ser vazio.")
+
     
 class Perfumaria(Produto):
     def __init__(self, codigo: str, nome: str, preco: float, volume: str):

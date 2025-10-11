@@ -6,6 +6,10 @@ class Estoque:
     def __init__(self):
         self.__inventario: Dict[str, Dict] = {}
 
+    @property
+    def produtos(self) -> List[Produto]:
+        return [dados["produto"] for dados in self.__inventario.values()]
+
     def adicionar_lote(self, produto: Produto, codigo_lote: str, quantidade: int, data_validade: date) -> None:
         novo_lote = Lote(codigo_lote, quantidade, data_validade)
         chave_produto = produto.codigo
@@ -85,8 +89,17 @@ class Estoque:
         lote.quantidade -= quantidade
 
         print(f"Registrada perda de {quantidade} un. do lote {lote.codigo_lote}. Motivo: {motivo}")
+        
+    def remover_produto(self, codigo_produto: str) -> bool:
+        if codigo_produto in self.__inventario:
+            del self.__inventario[codigo_produto]
+            print(f"Produto com código '{codigo_produto}' foi removido.")
+            return True
+        else:
+            print(f"Produto com código '{codigo_produto}' não encontrado para remoção.")
+            return False    
 
-    def consultar_lote_produto(self, produto: Produto) -> List[Lote]:
+    def consultar_lotes_produto(self, produto: Produto) -> List[Lote]:
         chave_produto = produto.codigo
         dados_produto = self.__inventario.get(chave_produto)
         
@@ -95,25 +108,33 @@ class Estoque:
         
         return []
 
-    def listar_produtos_baixo_estoque(self, limite_minimo: int) -> List[Produto]:
+    def listar_produtos_baixo_estoque(self, limite_minimo: int) -> list:
         produtos_em_falta = []
+        for dados_produto in self.__inventario.values():
+            produto_atual = dados_produto["produto"]
+            lista_de_lotes = dados_produto["lotes"]
+            
+            estoque_total = sum(lote.quantidade for lote in lista_de_lotes)
 
-        for dados_produtos in self.__inventario.values():
-            estoque_total = sum(lote.quantidade for lote in dados_produtos["lotes"])
             if estoque_total <= limite_minimo:
-                produtos_em_falta.append(dados_produtos["produto"])
+                produtos_em_falta.append((produto_atual, estoque_total))
+        
+        produtos_em_falta.sort(key=lambda item: item[1])
         return produtos_em_falta
 
 
-    def listar_produtos_proximo_vencimento(self,        dias_limite: int) -> List[Lote]:
+    def listar_produtos_proximo_vencimento(self, dias_limite: int) -> List[Lote]:
+
         lotes_a_vencer = []
         data_limite = date.today() + timedelta(days=dias_limite)
         
-        for dados_produtos in self.__inventario.values():
-            for lote in dados_produtos["lotes"]:
+        for dados_produto in self.__inventario.values():
+            produto = dados_produto["produto"]
+            for lote in dados_produto["lotes"]:
                 if lote.data_validade <= data_limite:
-                    lotes_a_vencer.append(lote)
+                    lotes_a_vencer.append((produto, lote))
         
+        lotes_a_vencer.sort(key=lambda item: item[1].data_validade)
         return lotes_a_vencer
 
 
