@@ -18,7 +18,7 @@ def exibir_menu(titulo: str, opcoes: list) -> None:
 def menu_caixa(estoque: Estoque, historico: HistoricoVendas, funcionario: Funcionario, cliente: Cliente):
     pass
 
-def menu_balcao(lista_de_clientes: list, estoque: Estoque, historico: HistoricoVendas, funcionario: Funcionario):
+def menu_balcao(lista_de_clientes: list, lista_de_funcionarios: list, estoque: Estoque, historico: HistoricoVendas, funcionario: Funcionario):
     while True:
         titulo_menu = "MÓDULO DO BALCÃO"
         opcoes_menu = [
@@ -42,7 +42,7 @@ def menu_balcao(lista_de_clientes: list, estoque: Estoque, historico: HistoricoV
         if escolha == 1:
             submenu_clientes(lista_de_clientes, historico)
         elif escolha == 2:
-            print("\n-> Submenu de Funcionários (em construção)...")
+            submenu_funcionarios(lista_de_funcionarios, historico)
         elif escolha == 3:
             print("\n-> Submenu de Produtos (em construção)...")
         elif escolha == 4:
@@ -204,7 +204,156 @@ def submenu_clientes(lista_de_clientes: list, historico: HistoricoVendas):
             print("Opção em construção ou inválida.")
             input("Pressione Enter para continuar...")
 
+def submenu_funcionarios(lista_de_funcionarios: list, historico: HistoricoVendas):
+    while True:
+        titulo = "GERENCIAR FUNCIONÁRIOS"
+        opcoes = [
+            "Cadastrar Novo Funcionário",
+            "Listar Todos os Funcionários",
+            "Consultar Histórico de um Funcionário",
+            "Atualizar Funcionário",
+            "Deletar Funcionário" 
+        ]
+        exibir_menu(titulo, opcoes)
+        largura_menu = 50
+        print(f"| {'0. Voltar'.ljust(largura_menu)} |")
+        print("+" + "-" * (largura_menu + 2) + "+")
+        
+        try:
+            escolha = int(input("Escolha uma opção: "))
+        except ValueError:
+            print("ERRO: Opção inválida.")
+            input("Pressione Enter para continuar...")
+            continue
 
+        if escolha == 1:
+            print("\n--- Cadastro de Novo Funcionário ---")
+            nome = input("Digite o nome do funcionário: ")
+            cpf = input("Digite o CPF do funcionário: ")
+            novo_funcionário = Funcionario(nome, cpf)
+            lista_de_funcionarios.append(novo_funcionário)
+
+            print(f"\n Funcionário '{novo_funcionário.nome}' cadastrado com a matrícula: {novo_funcionário.matricula}")
+            input("Pressione Enter para continuar...")
+
+        elif escolha == 2:
+            print("\n--- Lista de Funcionários Cadastrados ---")
+            if not lista_de_funcionarios:
+                print("Nenhum funcionário cadastrado.")
+            else:
+                for funcionario in lista_de_funcionarios:
+                    print(funcionario)
+            input("\n Pressione Enter para continuar...")
+
+        elif escolha == 3:
+            print("\n--- Consultar Histórico de Funcionário ---")
+            if not lista_de_funcionarios:
+                print("Nenhum funcionário cadastrado para consultar.")
+                input("\n Pressione Enter para continuar...")
+                continue 
+
+            for funcionario in lista_de_funcionarios:
+                print(f"Matrícula: {funcionario.matricula} | Nome: {funcionario.nome}")
+            
+            try:
+                matricula_busca = str(input("\n Digite a matrícula do funcionário para ver o histórico: ").upper())
+                
+                funcionario_encontrado = None
+                for funcionario in lista_de_funcionarios:
+                    if funcionario.matricula == matricula_busca:
+                        funcionario_encontrado = funcionario
+                        break
+                
+                if funcionario_encontrado:
+                    vendas_funcionario = historico.consultar_historico_funcionario(funcionario_encontrado)
+                    print(f"\n--- Histórico de Compras de {funcionario_encontrado.nome} ---")
+                    if not vendas_funcionario:
+                        print("Nenhuma compra registrada para este funcionário.")
+                    else:
+                        for venda in vendas_funcionario:
+                            print(venda) 
+                else:
+                    print("ERRO: Nenhum funcionário encontrado com a matrícula informada.")
+
+            except ValueError:
+                print("ERRO: Matrícula inválida.")
+            
+            input("\n Pressione Enter para continuar...")
+
+        elif escolha == 4:
+            print("\n--- Atualizar Funcionário ---")
+            if not lista_de_funcionarios:
+                print("Nenhum funcionário cadastrado para atualizar.")
+                input("\n Pressione Enter para continuar...")
+                continue
+
+            for funcionario in lista_de_funcionarios:
+                print(f"Matrícula: {funcionario.matricula} | Nome: {funcionario.nome}")
+            
+            try:
+                matricula_busca = str(input("\nDigite a matrícula do funcionário para atualizá-lo: ")).upper()
+                funcionario_encontrado = None
+                for funcionario in lista_de_funcionarios:
+                    if funcionario.matricula == matricula_busca:
+                        funcionario_encontrado = funcionario
+                        break
+
+                if funcionario_encontrado:
+                    print("(Deixe em branco e pressione Enter para não alterar)")
+                    
+                    novo_nome = input("Digite o novo nome: ")
+                    if novo_nome:
+                        funcionario_encontrado.nome = novo_nome 
+
+                    novo_cpf = input(f"Digite o novo CPF: ")
+                    if novo_cpf:
+                        funcionario_encontrado.cpf = novo_cpf 
+                    
+                    print(f"\n[SUCESSO] Dados do funcionário atualizados!")
+                    print(f"Novos dados: {funcionario_encontrado}")
+                else:
+                    print("ERRO: Nenhum funcionário encontrado com a matrícula informada.")
+
+            except ValueError:
+                print("ERRO: Matrícula inválida.")
+            input("Pressione Enter para continuar...")
+
+        elif escolha == 5:
+            print("\n--- Deletar Funcionário ---")
+            if not lista_de_funcionarios:
+                print("Nenhum funcionário cadastrado para remover.")
+                input("\nPressione Enter para continuar...")
+                continue
+
+            for funcionario in lista_de_funcionarios:
+                print(f"Matrícula: {funcionario.matricula} | Nome: {funcionario.nome}")
+            
+            try:
+                matricula_busca = str(input("\n Digite a Matrícula do funcionário para removê-lo: ")).upper()
+
+                funcionario_encontrado = None
+                for funcionario in lista_de_funcionarios:
+                    if funcionario.matricula == matricula_busca:
+                        funcionario_encontrado = funcionario
+                        break
+
+                if funcionario_encontrado:
+                    lista_de_funcionarios.remove(funcionario_encontrado)
+                    print(f"{funcionario_encontrado.nome}, removido com sucesso")
+                else:
+                    print("ERRO: Nenhum funcionário encontrado com a matrícula informada.")
+
+            except ValueError:
+                print("ERRO: ID inválido. Digite apenas números.")
+
+            input("Pressione Enter para continuar...")    
+
+
+        elif escolha == 0:
+            break
+        else:
+            print("Opção inválida.")
+            input("Pressione Enter para continuar...")
 
 def main():
     estoque = Estoque()
@@ -214,6 +363,7 @@ def main():
     dipirona = Medicamento("dip001", "Dipirona", 4.99, False)
     estoque.adicionar_lote(dipirona, "diplote001", 100, date(2027, 5, 16))
     lista_de_clientes = [cliente_teste]
+    lista_de_funcionarios = [func_teste]
 
     while True:
         titulo_menu = "MENU PRINCIPAL"
@@ -229,8 +379,10 @@ def main():
 
         if escolha == 1:
             menu_caixa(estoque, historico, func_teste, cliente_teste)
+
         elif escolha == 2:
-            menu_balcao(lista_de_clientes, estoque, historico, func_teste)
+            menu_balcao(lista_de_clientes, lista_de_funcionarios, estoque, historico, func_teste)
+
         elif escolha == 3:
             print("Saindo do sistema.")
             break
