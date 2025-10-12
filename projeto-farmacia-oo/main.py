@@ -16,16 +16,29 @@ def exibir_menu(titulo: str, opcoes: list) -> None:
     print("+" + "-" * (largura + 2) + "+")
 
 def menu_caixa(estoque: Estoque, historico: HistoricoVendas, funcionario: Funcionario, cliente: Cliente):
-    pass
+    while True:
+        titulo_menu = "MÓDULO DO CAIXA"
+        opcoes_menu = [
+            "Realizar Venda",
+            "Histórico de Vendas",
+            "Buscar Venda por ID(??)",
+            "Gerenciar Relatórios de Caixa(historico de cliente e historico de func)"
+            ]
+        exibir_menu(titulo_menu, opcoes_menu)
+        largura_menu = 50
+        print(f"| {'0. Voltar ao Menu Principal'.ljust(largura_menu)} |")
+        print("+" + "-" * (largura_menu + 2) + "+")
 
-def menu_balcao(lista_de_clientes: list, lista_de_funcionarios: list, estoque: Estoque, historico: HistoricoVendas, funcionario: Funcionario):
+def menu_balcao(lista_de_orcamentos: list, lista_de_clientes: list, lista_de_funcionarios: list, estoque: Estoque, historico: HistoricoVendas, funcionario: Funcionario):
     while True:
         titulo_menu = "MÓDULO DO BALCÃO"
         opcoes_menu = [
             "Gerenciar Clientes",
             "Gerenciar Funcionarios",
             "Gerenciar Produtos",
-            "Gerenciar Relatórios de Estoque"
+            "Gerenciar Orçamentos", 
+            "Gerenciar Estoque",
+            "Consultar Histórico de Vendas"
             ]
         exibir_menu(titulo_menu, opcoes_menu)
         largura_menu = 50
@@ -46,7 +59,11 @@ def menu_balcao(lista_de_clientes: list, lista_de_funcionarios: list, estoque: E
         elif escolha == 3:
             submenu_produtos(estoque)
         elif escolha == 4:
-            submenu_relatorios(estoque)
+            submenu_orcamentos(lista_de_orcamentos, lista_de_clientes, estoque, funcionario)
+        elif escolha == 5: 
+            submenu_estoque(estoque)
+        elif escolha == 6:
+            submenu_historicos(historico, lista_de_clientes, lista_de_funcionarios)
         elif escolha == 0:
             print("Voltando ao Menu Principal...")
             break
@@ -59,7 +76,6 @@ def submenu_clientes(lista_de_clientes: list, historico: HistoricoVendas):
         opcoes = [
             "Cadastrar Novo Cliente",
             "Listar Todos os Clientes",
-            "Consultar Histórico de um Cliente",
             "Atualizar Cliente",
             "Deletar Cliente" 
         ]
@@ -95,41 +111,6 @@ def submenu_clientes(lista_de_clientes: list, historico: HistoricoVendas):
             input("\nPressione Enter para continuar...")
 
         elif escolha == 3:
-            print("\n--- Consultar Histórico de Cliente ---")
-            if not lista_de_clientes:
-                print("Nenhum cliente cadastrado para consultar.")
-                input("\nPressione Enter para continuar...")
-                continue 
-
-            for cliente in lista_de_clientes:
-                print(f"ID: {cliente.id_cliente} | Nome: {cliente.nome}")
-            
-            try:
-                id_busca = int(input("\nDigite o ID do cliente para ver o histórico: "))
-                
-                cliente_encontrado = None
-                for cliente in lista_de_clientes:
-                    if cliente.id_cliente == id_busca:
-                        cliente_encontrado = cliente
-                        break
-                
-                if cliente_encontrado:
-                    vendas_cliente = historico.consultar_historico_cliente(cliente_encontrado)
-                    print(f"\n--- Histórico de Compras de {cliente_encontrado.nome} ---")
-                    if not vendas_cliente:
-                        print("Nenhuma compra registrada para este cliente.")
-                    else:
-                        for venda in vendas_cliente:
-                            print(venda) 
-                else:
-                    print("ERRO: Nenhum cliente encontrado com o ID informado.")
-
-            except ValueError:
-                print("ERRO: ID inválido. Digite apenas números.")
-            
-            input("\nPressione Enter para continuar...")
-
-        elif escolha == 4:
             print("\n--- Atualizar Cliente ---")
             if not lista_de_clientes:
                 print("Nenhum cliente cadastrado para atualizar.")
@@ -167,7 +148,7 @@ def submenu_clientes(lista_de_clientes: list, historico: HistoricoVendas):
                 print("ERRO: ID inválido. Digite apenas números.")
             input("Pressione Enter para continuar...")
 
-        elif escolha == 5:
+        elif escolha == 4:
             print("\n--- Deletar Cliente ---")
             if not lista_de_clientes:
                 print("Nenhum cliente cadastrado para remover.")
@@ -210,7 +191,6 @@ def submenu_funcionarios(lista_de_funcionarios: list, historico: HistoricoVendas
         opcoes = [
             "Cadastrar Novo Funcionário",
             "Listar Todos os Funcionários",
-            "Consultar Histórico de um Funcionário",
             "Atualizar Funcionário",
             "Deletar Funcionário" 
         ]
@@ -246,41 +226,6 @@ def submenu_funcionarios(lista_de_funcionarios: list, historico: HistoricoVendas
             input("\n Pressione Enter para continuar...")
 
         elif escolha == 3:
-            print("\n--- Consultar Histórico de Funcionário ---")
-            if not lista_de_funcionarios:
-                print("Nenhum funcionário cadastrado para consultar.")
-                input("\n Pressione Enter para continuar...")
-                continue 
-
-            for funcionario in lista_de_funcionarios:
-                print(f"Matrícula: {funcionario.matricula} | Nome: {funcionario.nome}")
-            
-            try:
-                matricula_busca = str(input("\n Digite a matrícula do funcionário para ver o histórico: ").upper())
-                
-                funcionario_encontrado = None
-                for funcionario in lista_de_funcionarios:
-                    if funcionario.matricula == matricula_busca:
-                        funcionario_encontrado = funcionario
-                        break
-                
-                if funcionario_encontrado:
-                    vendas_funcionario = historico.consultar_historico_funcionario(funcionario_encontrado)
-                    print(f"\n--- Histórico de Compras de {funcionario_encontrado.nome} ---")
-                    if not vendas_funcionario:
-                        print("Nenhuma compra registrada para este funcionário.")
-                    else:
-                        for venda in vendas_funcionario:
-                            print(venda) 
-                else:
-                    print("ERRO: Nenhum funcionário encontrado com a matrícula informada.")
-
-            except ValueError:
-                print("ERRO: Matrícula inválida.")
-            
-            input("\n Pressione Enter para continuar...")
-
-        elif escolha == 4:
             print("\n--- Atualizar Funcionário ---")
             if not lista_de_funcionarios:
                 print("Nenhum funcionário cadastrado para atualizar.")
@@ -318,7 +263,7 @@ def submenu_funcionarios(lista_de_funcionarios: list, historico: HistoricoVendas
                 print("ERRO: Matrícula inválida.")
             input("Pressione Enter para continuar...")
 
-        elif escolha == 5:
+        elif escolha == 4:
             print("\n--- Deletar Funcionário ---")
             if not lista_de_funcionarios:
                 print("Nenhum funcionário cadastrado para remover.")
@@ -472,13 +417,14 @@ def submenu_produtos(estoque: Estoque):
             print("ERRO: Opção não existe.")
             input("Pressione Enter para continuar...")
 
-def submenu_relatorios(estoque: Estoque):
+def submenu_orcamentos(lista_de_orcamentos: list, lista_de_clientes: list, estoque: Estoque, funcionario_logado: Funcionario):
     while True:
-        titulo = "GERAR RELATÓRIOS"
+        titulo = "GERENCIAR ORÇAMENTOS"
         opcoes = [
-            "Produtos com Baixo Estoque",
-            "Lotes Próximos ao Vencimento"
-            ]
+                "Criar Novo Orçamento",
+                "Listar Orçamentos Salvos",
+                "Converter Orçamento em Venda"
+                ]
         
         exibir_menu(titulo, opcoes)
         largura_menu = 50
@@ -488,14 +434,215 @@ def submenu_relatorios(estoque: Estoque):
         try:
             escolha = int(input("Escolha uma opção: "))
         except ValueError:
-            print("ERRO: Opção inválida.")
-            input("Pressione Enter para continuar...")
-            continue
+            print("ERRO: Opção inválida."); input("Pressione Enter..."); 
         
         if escolha == 1:
+            print("\n--- Criar Novo Orçamento ---")
+            if not lista_de_clientes:
+                print("Nenhum cliente cadastrado. Cadastre um cliente primeiro."); input("Pressione Enter..."); continue
+            
+            for cliente in lista_de_clientes: print(f"ID: {cliente.id_cliente} | Nome: {cliente.nome}")
+            
+            try:
+                id_cliente = int(input("Digite o ID do cliente para o orçamento: "))
+                cliente_selecionado = next((c for c in lista_de_clientes if c.id_cliente == id_cliente), None)
+
+                if not cliente_selecionado:
+                    print("ERRO: Cliente não encontrado."); input("Pressione Enter..."); continue
+
+                novo_orcamento = Orcamento(funcionario_logado, cliente_selecionado)
+            
+                
+                while True:
+                    os.system('cls' if os.name == 'nt' else 'clear')
+                    print("--- Editando Orçamento ---")
+                    print(novo_orcamento) 
+                    print("Opções: \n[1] Adicionar Item \n[2] Remover Item \n[0] Salvar e Sair")
+                    escolha_item = input(">> ")
+
+                    if escolha_item == '1':
+                        print("\n--- Produtos Disponíveis no Estoque ---")
+
+                        if not estoque.produtos:
+                            print("Nenhum produto no estoque para adicionar.")
+                            input("Pressione Enter...")
+                            continue 
+                        else:
+                            for produto in estoque.produtos:
+                                print(f"Código: {produto.codigo.ljust(15)} | Nome: {produto.nome}")
+
+                        try:
+                            cod_produto = input("\nDigite o código do produto a adicionar: ").upper()
+                            produto_encontrado = next((p for p in estoque.produtos if p.codigo == cod_produto), None)
+                            
+                            if produto_encontrado:
+                                qtd = int(input(f"Digite a quantidade para '{produto_encontrado.nome}': "))
+                                novo_orcamento.adicionar_item(produto_encontrado, qtd)
+                            else:
+                                print("ERRO: Produto não encontrado."); input("Pressione Enter...")
+
+                        except ValueError:
+                            print("ERRO: Quantidade deve ser um número."); input("Pressione Enter...")
+
+                    elif escolha_item == '2':
+                        if not novo_orcamento.itens:
+                            print("ERRO: Não há itens para remover."); input("Pressione Enter...")
+                            continue
+
+                        print("\n--- Itens no Orçamento ---")
+                        for i, item in enumerate(novo_orcamento.itens):
+                            print(f"  [{i + 1}] {item.produto.nome} (Qtd: {item.quantidade})")
+                        
+                        try:
+                            indice_remover = int(input("Digite o número do item a remover: "))
+                            
+                            if 1 <= indice_remover <= len(novo_orcamento.itens):
+                                item_a_remover = novo_orcamento.itens[indice_remover - 1]
+                                
+                                novo_orcamento.remover_item(item_a_remover)
+                                print(f"[SUCESSO] Item '{item_a_remover.produto.nome}' removido.")
+                            else:
+                                print("ERRO: Número de item inválido.")
+                        except ValueError:
+                            print("ERRO: Digite apenas o número do item.")
+                        
+                        input("Pressione Enter...")
+
+                    elif escolha_item == '0':
+                        lista_de_orcamentos.append(novo_orcamento)
+                        print(f"[SUCESSO] Orçamento #{novo_orcamento.id_orcamento} salvo.")
+                        break
+                    else:
+                        print("Opção de edição inválida."); input("Pressione Enter...")
+
+            except (ValueError, IndexError):
+                print("ERRO: Entrada inválida."); input("Pressione Enter...")
+            
+            input("Pressione Enter para voltar ao menu de orçamentos...")
+
+        elif escolha == 2:
+            print("\n--- Orçamentos Salvos ---")
+            if not lista_de_orcamentos:
+                print("Nenhum orçamento salvo.")
+            else:
+                for orcamento in lista_de_orcamentos:
+                    print(orcamento)
+            input("\nPressione Enter para continuar...")
+
+        elif escolha == 3:
+            print("\n--- Converter Orçamento em Venda ---")
+            if not lista_de_orcamentos:
+                print("Nenhum orçamento salvo para converter."); input("Pressione Enter..."); continue
+
+            for orcamento in lista_de_orcamentos: print(f"ID: {orcamento.id_orcamento} | Cliente: {orcamento.cliente.nome} | Total: R${orcamento.valor_total:.2f}")
+
+            try:
+                id_orcamento = int(input("Digite o ID do orçamento a ser convertido: "))
+                orcamento_encontrado = next((o for o in lista_de_orcamentos if o.id_orcamento == id_orcamento), None)
+
+                if orcamento_encontrado:
+                    nova_venda = orcamento_encontrado.converter_em_venda()
+                    print("\n[SUCESSO] Venda gerada a partir do orçamento:")
+                    print(nova_venda)
+                    print("\nIMPORTANTE: A venda foi criada, mas ainda precisa ser processada e finalizada no Módulo do Caixa.")
+                else:
+                    print("ERRO: Orçamento não encontrado.")
+            except ValueError:
+                print("ERRO: ID inválido.")
+            input("\nPressione Enter para continuar...")
+
+        elif escolha == 0:
+            break
+        else:
+            print("ERRO: Opção não existe."); input("Pressione Enter...")
+
+def submenu_estoque(estoque: Estoque):
+    while True:
+        titulo = "GERENCIAR ESTOQUE"
+        opcoes = [
+            "Adicionar Lote a Produto Existente",
+            "Registrar Perda de Lote",
+            "Consultar Lotes de um Produto",
+            "Gerar Relatório de Baixo Estoque",
+            "Gerar Relatório de Lotes a Vencer"
+        ]
+        exibir_menu(titulo, opcoes)
+        largura_menu = 50
+        print(f"| {'0. Voltar'.ljust(largura_menu)} |")
+        print("+" + "-" * (largura_menu + 2) + "+")
+
+        try:
+            escolha = int(input("Escolha uma opção: "))
+        except ValueError:
+            print("ERRO: Opção inválida."); input("Pressione Enter..."); continue
+
+        if escolha == 1:
+            print("\n--- Adicionar Lote a Produto Existente ---")
+            for p in estoque.produtos: print(f"Código: {p.codigo} | Nome: {p.nome}")
+            cod_produto = input("\nDigite o código do produto: ").upper()
+            produto_encontrado = next((p for p in estoque.produtos if p.codigo == cod_produto), None)
+            
+            if produto_encontrado:
+                try:
+                    codigo_lote = input("Código do novo lote: ").upper()
+                    quantidade = int(input("Quantidade no lote: "))
+                    ano = int(input("Ano de validade (AAAA): "))
+                    mes = int(input("Mês de validade (MM): "))
+                    dia = int(input("Dia de validade (DD): "))
+                    data_validade = date(ano, mes, dia)
+                    estoque.adicionar_lote(produto_encontrado, codigo_lote, quantidade, data_validade)
+                except ValueError:
+                    print("ERRO: Dados numéricos inválidos.")
+            else:
+                print("ERRO: Produto não encontrado.")
+            input("\nPressione Enter para continuar...")
+
+        elif escolha == 2:
+            print("\n--- Registrar Perda de Lote ---")
+            for p in estoque.produtos: print(f"Código: {p.codigo} | Nome: {p.nome}")
+            cod_produto = input("\nDigite o código do produto com perda: ").upper()
+            produto_encontrado = next((p for p in estoque.produtos if p.codigo == cod_produto), None)
+
+            if produto_encontrado:
+                lotes_do_produto = estoque.consultar_lotes_produto(produto_encontrado)
+                if not lotes_do_produto:
+                    print("Produto não possui lotes."); input("Pressione Enter..."); continue
+                
+                for i, lote in enumerate(lotes_do_produto): print(f"  [{i + 1}] - {lote}")
+                
+                try:
+                    idx_lote = int(input("Digite o número do lote com perda: "))
+                    lote_selecionado = lotes_do_produto[idx_lote - 1]
+                    qtd_perdida = int(input("Digite a quantidade perdida: "))
+                    motivo = input("Digite o motivo da perda: ")
+                    estoque.registrar_perda(lote_selecionado, qtd_perdida, motivo)
+                except (ValueError, IndexError):
+                    print("ERRO: Seleção ou quantidade inválida.")
+            else:
+                print("ERRO: Produto não encontrado.")
+            input("\nPressione Enter para continuar...")
+
+        elif escolha == 3:
+            print("\n--- Consultar Lotes de um Produto ---")
+            for p in estoque.produtos: print(f"Código: {p.codigo} | Nome: {p.nome}")
+            cod_produto = input("Digite o código do produto para ver os lotes: ").upper()
+            produto_encontrado = next((p for p in estoque.produtos if p.codigo == cod_produto), None)
+
+            if produto_encontrado:
+                lotes_do_produto = estoque.consultar_lotes_produto(produto_encontrado)
+                print(f"\nLotes para '{produto_encontrado.nome}':")
+                if not lotes_do_produto:
+                    print("Nenhum lote em estoque para este produto.")
+                else:
+                    for lote in lotes_do_produto: print(f"  - {lote}")
+            else:
+                print("ERRO: Produto não encontrado.")
+            input("\nPressione Enter para continuar...")
+
+        elif escolha == 4:
             try:
                 limite = int(input("\nListar produtos com estoque menor ou igual a: "))
-                print(f"\n--- Relatório: Produtos com Baixo Estoque dado Limite: {limite}) ---")
+                print(f"\n--- Relatório: Produtos com Baixo Estoque dado Limite: {limite} ---")
                 
                 produtos_encontrados = estoque.listar_produtos_baixo_estoque(limite)
 
@@ -511,8 +658,9 @@ def submenu_relatorios(estoque: Estoque):
                 print("ERRO: Limite inválido. Digite apenas um número.")
 
             input("\nPressione Enter para continuar...")
-
-        elif escolha == 2:
+            
+       
+        elif escolha == 5:
             try:
                 dias = int(input("\nListar lotes que vencem nos próximos (dias): "))
                 print(f"\n--- Relatório: Lotes a Vencer nos Próximos {dias} Dias ---")
@@ -537,6 +685,92 @@ def submenu_relatorios(estoque: Estoque):
             print("ERRO: Opção não existe.")
             input("Pressione Enter para continuar...")
 
+def submenu_historicos(historico: HistoricoVendas, lista_de_clientes: list, lista_de_funcionarios: list):
+    while True:
+        titulo = "CONSULTAR HISTÓRICO DE VENDAS"
+        opcoes = [
+            "Listar Histórico Geral de Vendas",
+            "Consultar Histórico por Cliente",
+            "Consultar Histórico por Funcionário"
+        ]
+        exibir_menu(titulo, opcoes)
+        largura_menu = 50
+        print(f"| {'0. Voltar'.ljust(largura_menu)} |")
+        print("+" + "-" * (largura_menu + 2) + "+")
+
+        try:
+            escolha = int(input("Escolha uma opção: "))
+        except ValueError:
+            print("ERRO: Opção inválida."); input("Pressione Enter..."); continue
+
+        if escolha == 1:
+            print("\n--- Histórico Geral de Todas as Vendas ---")
+            todas_as_vendas = historico.vendas
+            if not todas_as_vendas:
+                print("Nenhuma venda registrada no histórico.")
+            else:
+                for venda in todas_as_vendas:
+                    print("-" * 50)
+                    print(venda)
+            input("\nPressione Enter para continuar...")
+
+        elif escolha == 2:
+            print("\n--- Histórico de Vendas por Cliente ---")
+            if not lista_de_clientes:
+                print("Nenhum cliente cadastrado."); input("Pressione Enter..."); continue
+            
+            for cliente in lista_de_clientes: print(f"ID: {cliente.id_cliente} | Nome: {cliente.nome}")
+            
+            try:
+                id_cliente = int(input("\nDigite o ID do cliente para ver o histórico: "))
+                cliente_encontrado = next((c for c in lista_de_clientes if c.id_cliente == id_cliente), None)
+
+                if cliente_encontrado:
+                    vendas_do_cliente = historico.consultar_historico_cliente(cliente_encontrado)
+                    print(f"\n--- Compras de {cliente_encontrado.nome} ---")
+                    if not vendas_do_cliente:
+                        print("Nenhuma compra registrada para este cliente.")
+                    else:
+                        for venda in vendas_do_cliente:
+                            print("-" * 50)
+                            print(venda)
+                else:
+                    print("ERRO: Cliente não encontrado.")
+            except ValueError:
+                print("ERRO: ID inválido.")
+            input("\nPressione Enter para continuar...")
+
+        elif escolha == 3:
+            print("\n--- Histórico de Vendas por Funcionário ---")
+            if not lista_de_funcionarios:
+                print("Nenhum funcionário cadastrado."); input("Pressione Enter..."); continue
+
+            for func in lista_de_funcionarios: print(f"Matrícula: {func.matricula} | Nome: {func.nome}")
+
+            try:
+                mat_funcionario = input("\nDigite a matrícula do funcionário: ").upper()
+                func_encontrado = next((f for f in lista_de_funcionarios if f.matricula == mat_funcionario), None)
+
+                if func_encontrado:
+                    vendas_do_funcionario = historico.consultar_historico_funcionario(func_encontrado)
+                    print(f"\n--- Vendas de {func_encontrado.nome} ---")
+                    if not vendas_do_funcionario:
+                        print("Nenhuma venda registrada para este funcionário.")
+                    else:
+                        for venda in vendas_do_funcionario:
+                            print("-" * 50)
+                            print(venda)
+                else:
+                    print("ERRO: Funcionário não encontrado.")
+            except ValueError:
+                print("ERRO: Entrada inválida.")
+            input("\nPressione Enter para continuar...")
+
+        elif escolha == 0:
+            break
+        else:
+            print("ERRO: Opção não existe."); input("Pressione Enter...")
+
 def main():
     estoque = Estoque()
     historico = HistoricoVendas()
@@ -546,6 +780,7 @@ def main():
     estoque.adicionar_lote(med_teste, "diplote001", 100, date(2027, 5, 16))
     lista_de_clientes = [cliente_teste]
     lista_de_funcionarios = [func_teste]
+    lista_de_orcamentos = []
 
     while True:
         titulo_menu = "MENU PRINCIPAL"
@@ -563,7 +798,7 @@ def main():
             menu_caixa(estoque, historico, func_teste, cliente_teste)
 
         elif escolha == 2:
-            menu_balcao(lista_de_clientes, lista_de_funcionarios, estoque, historico, func_teste)
+            menu_balcao(lista_de_orcamentos, lista_de_clientes, lista_de_funcionarios, estoque, historico, func_teste)
 
         elif escolha == 3:
             print("Saindo do sistema.")
