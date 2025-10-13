@@ -15,19 +15,59 @@ def exibir_menu(titulo: str, opcoes: list) -> None:
         print(f"| {texto_da_opcao.ljust(largura)} |")
     print("+" + "-" * (largura + 2) + "+")
 
-def menu_caixa(estoque: Estoque, historico: HistoricoVendas, funcionario: Funcionario, cliente: Cliente):
+def menu_caixa(estoque: Estoque, historico: HistoricoVendas, funcionario_logado: Funcionario, lista_de_clientes: list):
+    
+    venda_ativa = None
+    vendas_pausadas = []
+
     while True:
-        titulo_menu = "MÓDULO DO CAIXA"
-        opcoes_menu = [
-            "Realizar Venda",
-            "Histórico de Vendas",
-            "Buscar Venda por ID(??)",
-            "Gerenciar Relatórios de Caixa(historico de cliente e historico de func)"
+        if venda_ativa is None:
+            titulo = "MÓDULO CAIXA (LIVRE)"
+            opcoes = [
+                "Iniciar Nova Venda", 
+                "Retomar Venda Pausada",
+                "Cancelar Venda Finalizada (Estorno)"
             ]
-        exibir_menu(titulo_menu, opcoes_menu)
-        largura_menu = 50
-        print(f"| {'0. Voltar ao Menu Principal'.ljust(largura_menu)} |")
-        print("+" + "-" * (largura_menu + 2) + "+")
+
+            exibir_menu(titulo, opcoes)
+            largura_menu = 50
+            print(f"| {'0. Voltar ao Menu Principal'.ljust(largura_menu)} |")
+            print("+" + "-" * (largura_menu + 2) + "+")
+
+            try:
+                escolha = int(input("Escolha uma opção: "))
+            except ValueError:
+                print("ERRO..."); input("Pressione Enter..."); continue
+
+            if escolha == 1:
+                print("\n--- Iniciando Nova Venda ---")
+                for cliente in lista_de_clientes:
+                    print(f"ID: {cliente.id_cliente} | Nome: {cliente.nome}")
+                
+                try:
+                    id_cliente = int(input("\nDigite o ID do cliente para a venda: "))
+                    cliente_selecionado = None
+                    for cliente in lista_de_clientes:
+                        if cliente.id_cliente == id_cliente:
+                            cliente_selecionado = cliente                    
+
+                    if cliente_selecionado:
+                        venda_ativa = Venda(funcionario_logado,cliente_selecionado)
+                        
+                        print(f"\n[SUCESSO] Venda #{venda_ativa.id_venda} iniciada para o cliente {cliente_selecionado.nome}.")
+                        input("Pressione Enter para começar a adicionar os itens...")
+                    else:
+                        print("ERRO: Cliente não encontrado.")
+                        input("Pressione Enter...")
+                    
+                except ValueError:
+                    print("ERRO: ID inválido.")
+
+            elif escolha == 0:
+                break
+        
+        else:
+            venda_ativa = submenu_venda_ativa(venda_ativa, estoque, historico)
 
 def menu_balcao(lista_de_orcamentos: list, lista_de_clientes: list, lista_de_funcionarios: list, estoque: Estoque, historico: HistoricoVendas, funcionario: Funcionario):
     while True:
@@ -770,6 +810,107 @@ def submenu_historicos(historico: HistoricoVendas, lista_de_clientes: list, list
             break
         else:
             print("ERRO: Opção não existe."); input("Pressione Enter...")
+            
+def submenu_venda_ativa(venda_em_andamento: Venda, estoque: Estoque, historico: HistoricoVendas):
+    while True:
+        print("--- VENDA EM ANDAMENTO ---")
+        print(venda_em_andamento)
+
+        titulo = f"OPERAÇÕES PARA A VENDA #{venda_em_andamento.id_venda}"
+        opcoes = [
+            "Adicionar Item",
+            "Remover Item",
+            "Aplicar Desconto",
+            "Pausar Venda",
+            "Cancelar Venda",
+            "Finalizar Venda (Ir para Pagamento)"
+        ]
+
+        exibir_menu(titulo, opcoes)
+
+        try:
+            escolha = int(input("Escolha uma ação: "))
+        except ValueError:
+            print("ERRO: Opção inválida."); input("Pressione Enter..."); continue
+
+        if escolha == 1:
+            print("\n--- Adicionar Item à Venda ---")
+            
+            produtos_disponiveis = [p for p in estoque.produtos if estoque.consultar_quantidade_total(p) > 0]
+            if not produtos_disponiveis:
+                print("Nenhum produto com estoque para adicionar."); input("Pressione Enter..."); continue
+
+            print("\n--- Produtos Disponíveis ---")
+            for produto in estoque.produtos:
+                print(f"  Código: {produto.codigo.ljust(15)} | Nome: {produto.nome}")
+
+            try:
+                cod_produto = input("\nDigite o código do produto a adicionar: ").upper()
+                produto_encontrado = next((p for p in estoque.produtos if p.codigo == cod_produto), None)
+                    
+                if produto_encontrado:
+                    qtd = int(input(f"Digite a quantidade para '{produto_encontrado.nome}': "))
+                    if qtd <= 0:
+                        print("\n[ERRO] A quantidade deve ser um número positivo.")
+                        input("Pressione Enter para continuar...")
+                        continue
+
+                    estoque_disponivel = estoque.consultar_quantidade_total(produto_encontrado)
+
+                    if qtd > estoque_disponivel:
+                        print(f"\n[ERRO] Estoque insuficiente. Disponível: {estoque_disponivel} unidades.")
+                    else:
+                        venda_em_andamento.adicionar_item(produto_encontrado, qtd)
+                        print(f"\n[SUCESSO] {qtd} unidade(s) de '{produto_encontrado.nome}' adicionada(s) à venda.")
+                else:
+                    print("ERRO: Produto com o código informado não foi encontrado.")
+                
+            except ValueError:
+                print("ERRO: Quantidade deve ser um número inteiro.")
+                
+            input("Pressione Enter para continuar...")
+
+        elif escolha == 2:
+            print("\n--- Remover Item da Venda ---")
+            if not venda_em_andamento.itens:
+                print("A venda está vazia. Não há itens para remover.")
+                input("\nPressione Enter para continuar...")
+                continue
+
+            print("\nItens na venda atual:")
+            for i, item in enumerate(venda_em_andamento.itens):
+                print(f"  [{i + 1}] {item}")
+
+            try:
+                indice_remover = int(input("\nDigite o número do item a remover: "))
+                
+                if 1 <= indice_remover <= len(venda_em_andamento.itens):
+                    item_a_remover = venda_em_andamento.itens[indice_remover - 1]
+                    
+                    venda_em_andamento.remover_item(item_a_remover)
+                    print("Item removido com sucesso.")
+
+                else:
+                    print("ERRO: Número de item inválido.")
+            except ValueError:
+                print("ERRO: código inválido.")
+
+
+
+        elif escolha == 3:
+            # TODO: Lógica de Aplicar Desconto
+            pass
+        elif escolha == 4: # Pausar
+            # TODO: Lógica para pausar e SAIR do submenu
+            pass
+        elif escolha == 5: # Cancelar
+            # TODO: Lógica para cancelar e SAIR do submenu
+            pass
+        elif escolha == 6: # Finalizar
+            # TODO: Lógica para pagar, finalizar e SAIR do submenu
+            pass
+        else:
+            print("ERRO: Opção inválida."); input("Pressione Enter...")
 
 def main():
     estoque = Estoque()
@@ -795,7 +936,7 @@ def main():
             continue
 
         if escolha == 1:
-            menu_caixa(estoque, historico, func_teste, cliente_teste)
+            menu_caixa(estoque, historico, func_teste, lista_de_clientes)
 
         elif escolha == 2:
             menu_balcao(lista_de_orcamentos, lista_de_clientes, lista_de_funcionarios, estoque, historico, func_teste)

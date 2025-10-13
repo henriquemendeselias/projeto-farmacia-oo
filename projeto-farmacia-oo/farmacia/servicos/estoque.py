@@ -53,7 +53,10 @@ class Estoque:
             else: 
                 quantidade -= lote.quantidade
                 lote.quantidade = 0
-
+            
+        self.__inventario[chave_produto]["lotes"] = [
+        lote for lote in lista_de_lotes if lote.quantidade > 0 ]
+            
         return True
 
     def estornar_item(self, produto: Produto, quantidade: int) -> None:
@@ -71,24 +74,31 @@ class Estoque:
         lote_alvo.quantidade += quantidade
         print(f"Estornado {quantidade} un. para o lote {lote_alvo.codigo_lote} do produto '{produto.nome}'.")
 
-    def registrar_perda(self, lote: Lote, quantidade: int, motivo: str) -> None:
-        lote_encontrado = False
-        for dados_produtos in self.__inventario.values():
-            if lote in dados_produtos["lotes"]:
-                lote_encontrado = True
+    
+
+    def registrar_perda(self, lote_a_verificar: Lote, quantidade: int, motivo: str) -> None:
+        chave_do_produto = None
+        lista_de_lotes_do_produto = None
+        for chave, dados in self.__inventario.items():
+            if lote_a_verificar in dados["lotes"]:
+                chave_do_produto = chave
+                lista_de_lotes_do_produto = dados["lotes"]
                 break
 
-        if not lote_encontrado:
-            print(f"O lote {lote.codigo_lote} não foi encontrado no inventário.")
+        if not chave_do_produto:
+            print(f"[ERRO] O lote {lote_a_verificar.codigo_lote} não foi encontrado no inventário.")
             return
-        
-        if quantidade <= 0 or quantidade > lote.quantidade:
-            print("Quantidade inválida ou maior que o estoque do lote")
-            return
-        
-        lote.quantidade -= quantidade
 
-        print(f"Registrada perda de {quantidade} un. do lote {lote.codigo_lote}. Motivo: {motivo}")
+        if quantidade <= 0 or quantidade > lote_a_verificar.quantidade:
+            print(f"[ERRO] Quantidade de perda inválida ({quantidade}). Estoque do lote: {lote_a_verificar.quantidade}.")
+            return
+
+        print(f"[LOG ESTOQUE] Registrada perda de {quantidade} un. do lote {lote_a_verificar.codigo_lote}. Motivo: {motivo}")
+        lote_a_verificar.quantidade -= quantidade
+
+        self.__inventario[chave_do_produto]["lotes"] = [
+            lote for lote in lista_de_lotes_do_produto if lote.quantidade > 0
+        ]
         
     def remover_produto(self, codigo_produto: str) -> bool:
         if codigo_produto in self.__inventario:
@@ -136,6 +146,16 @@ class Estoque:
         
         lotes_a_vencer.sort(key=lambda item: item[1].data_validade)
         return lotes_a_vencer
+    
+    def consultar_quantidade_total(self, produto: Produto) -> int:
+        chave_produto = produto.codigo
+        dados_produto = self.__inventario.get(chave_produto)
+        
+        if dados_produto:
+            lista_de_lotes = dados_produto["lotes"]
+            return sum(lote.quantidade for lote in lista_de_lotes)
+        
+        return 0
 
 
     def __str__(self) -> str:
