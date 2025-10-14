@@ -33,7 +33,7 @@ PROJETOOO/
 ## Arquitetura do Sistema (Diagrama de Classes)
 O sistema foi modelado com 12 classes, separadas em Entidades, Transações e Serviços, demonstrando as relações de Herança, Composição, Agregação, Associação e Dependência.
 
-![Diagrama de Classes](UML/DIAGRAMA_DE_CLASSES_PNG.drawio.png)
+![Diagrama de Classes](UML/diagrama_de_classes.png)
 
 
 ## Funcionalidades Implementadas

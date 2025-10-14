@@ -15,10 +15,9 @@ def exibir_menu(titulo: str, opcoes: list) -> None:
         print(f"| {texto_da_opcao.ljust(largura)} |")
     print("+" + "-" * (largura + 2) + "+")
 
-def menu_caixa(estoque: Estoque, historico: HistoricoVendas, funcionario_logado: Funcionario, lista_de_clientes: list):
+def menu_caixa(estoque: Estoque, historico: HistoricoVendas, funcionario_logado: Funcionario, lista_de_clientes: list, vendas_pausadas):
     
     venda_ativa = None
-    vendas_pausadas = []
 
     while True:
         if venda_ativa is None:
