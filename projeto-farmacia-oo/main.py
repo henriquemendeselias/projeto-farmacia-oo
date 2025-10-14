@@ -63,6 +63,70 @@ def menu_caixa(estoque: Estoque, historico: HistoricoVendas, funcionario_logado:
                 except ValueError:
                     print("ERRO: ID inválido.")
 
+            elif escolha == 2: 
+                print("\n--- Retomar Venda Pausada ---")
+                
+                if not vendas_pausadas:
+                    print("Nenhuma venda pausada no momento.")
+                    input("Pressione Enter para continuar...")
+                    continue 
+
+                print("\nVendas pausadas disponíveis:")
+                for i, venda in enumerate(vendas_pausadas):
+                    print(f"  [{i + 1}] Venda #{venda.id_venda} | Cliente: {venda.cliente.nome} | Total: R${venda.valor_total:.2f}")
+
+                try:
+                    indice_escolhido = int(input("\nDigite o número da venda a retomar: "))
+                    
+                    if 1 <= indice_escolhido <= len(vendas_pausadas):
+                        venda_retomada = vendas_pausadas.pop(indice_escolhido - 1)
+                        venda_retomada.retomar_venda()
+                        venda_ativa = venda_retomada
+                        
+                        print(f"\n[SUCESSO] Venda #{venda_ativa.id_venda} retomada.")
+                        input("Pressione Enter para continuar a edição...")
+                    else:
+                        print("ERRO: Número de venda inválido.")
+                        input("Pressione Enter para continuar...")
+
+                except ValueError:
+                    print("ERRO: Entrada inválida. Digite apenas um número.")
+                    input("Pressione Enter para continuar...")
+            
+            elif escolha == 3: 
+                print("\n--- Cancelar Venda Finalizada (Estorno) ---")
+                
+                if not historico.vendas:
+                    print("Nenhuma venda no histórico para cancelar.")
+                    input("Pressione Enter para continuar...")
+                    continue
+
+                try:
+                    id_busca = int(input("\nDigite o ID da venda a ser cancelada: "))
+                    
+                    venda_encontrada = historico.buscar_venda_por_id(id_busca)
+
+                    if venda_encontrada:
+                        if venda_encontrada.status == "FINALIZADA":
+                            print("\n--- Venda a ser Cancelada ---")
+                            print(venda_encontrada)
+
+                            confirmacao = input("Confirmar o cancelamento e estorno desta venda? (s/n): ").lower()
+                            
+                            if confirmacao == 's':
+                                venda_encontrada.cancelar_venda(estoque)
+                            else:
+                                print("\nOperação de cancelamento abortada.")
+                        else:
+                            print(f"\n[ERRO] A venda #{id_busca} não pode ser cancelada (Status atual: {venda_encontrada.status}).")
+                    else:
+                        print(f"\n[ERRO] Nenhuma venda encontrada com o ID #{id_busca}.")
+
+                except ValueError:
+                    print("ERRO: ID inválido. Digite apenas um número.")
+                
+                input("Pressione Enter para continuar...")
+
             elif escolha == 0:
                 break
 
