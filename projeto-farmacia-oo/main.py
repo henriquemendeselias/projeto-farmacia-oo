@@ -102,6 +102,8 @@ def menu_caixa(estoque: Estoque, historico: HistoricoVendas, funcionario_logado:
                     continue
 
                 try:
+                    for venda in historico.vendas:
+                        print(venda)
                     id_busca = int(input("\nDigite o ID da venda a ser cancelada: "))
                     
                     venda_encontrada = historico.buscar_venda_por_id(id_busca)
@@ -141,7 +143,7 @@ def menu_caixa(estoque: Estoque, historico: HistoricoVendas, funcionario_logado:
             else:
                 venda_ativa = resultado_submenu
 
-def menu_balcao(lista_de_orcamentos: list, lista_de_clientes: list, lista_de_funcionarios: list, estoque: Estoque, historico: HistoricoVendas, funcionario: Funcionario):
+def menu_balcao(lista_de_orcamentos: list, lista_de_clientes: list, lista_de_funcionarios: list, estoque: Estoque, historico: HistoricoVendas, funcionario: Funcionario, vendas_pausadas: list):
     while True:
         titulo_menu = "MÓDULO DO BALCÃO"
         opcoes_menu = [
@@ -171,7 +173,7 @@ def menu_balcao(lista_de_orcamentos: list, lista_de_clientes: list, lista_de_fun
         elif escolha == 3:
             submenu_produtos(estoque)
         elif escolha == 4:
-            submenu_orcamentos(lista_de_orcamentos, lista_de_clientes, estoque, funcionario)
+            submenu_orcamentos(lista_de_orcamentos, lista_de_clientes, estoque, funcionario, vendas_pausadas, historico)
         elif escolha == 5: 
             submenu_estoque(estoque)
         elif escolha == 6:
@@ -529,7 +531,7 @@ def submenu_produtos(estoque: Estoque):
             print("ERRO: Opção não existe.")
             input("Pressione Enter para continuar...")
 
-def submenu_orcamentos(lista_de_orcamentos: list, lista_de_clientes: list, estoque: Estoque, funcionario_logado: Funcionario):
+def submenu_orcamentos(lista_de_orcamentos: list, lista_de_clientes: list, estoque: Estoque, funcionario_logado: Funcionario, vendas_pausadas, historico: HistoricoVendas):
     while True:
         titulo = "GERENCIAR ORÇAMENTOS"
         opcoes = [
@@ -654,9 +656,14 @@ def submenu_orcamentos(lista_de_orcamentos: list, lista_de_clientes: list, estoq
 
                 if orcamento_encontrado:
                     nova_venda = orcamento_encontrado.converter_em_venda()
-                    print("\n[SUCESSO] Venda gerada a partir do orçamento:")
-                    print(nova_venda)
-                    print("\nIMPORTANTE: A venda foi criada, mas ainda precisa ser processada e finalizada no Módulo do Caixa.")
+                    lista_de_orcamentos.remove(orcamento_encontrado)
+                    print("\n[SUCESSO] Orçamento convertido. Iniciando processamento da venda...")
+                    input("Pressione Enter para ir para a tela da venda...")
+                    resultado_venda = submenu_venda_ativa(nova_venda, estoque, historico)
+                    if resultado_venda and resultado_venda.status == "PAUSADA":
+                        vendas_pausadas.append(resultado_venda)
+                    print("\nRetornando ao menu de orçamentos...")
+                        
                 else:
                     print("ERRO: Orçamento não encontrado.")
             except ValueError:
@@ -1019,7 +1026,7 @@ def submenu_venda_ativa(venda_em_andamento: Venda, estoque: Estoque, historico: 
 
                 if pagamento_ok:
                     venda_em_andamento.finalizar_venda(estoque, historico)
-                    input("\n[SUCESSO] Venda finalizada. Pressione Enter para voltar ao menu do caixa...")
+                    input("\n[SUCESSO] Venda finalizada. Pressione Enter...")
                     return None
                 
                 else:
@@ -1043,6 +1050,7 @@ def main():
     lista_de_clientes = [cliente_teste]
     lista_de_funcionarios = [func_teste]
     lista_de_orcamentos = []
+    vendas_pausadas = []
 
     while True:
         titulo_menu = "MENU PRINCIPAL"
@@ -1057,10 +1065,10 @@ def main():
             continue
 
         if escolha == 1:
-            menu_caixa(estoque, historico, func_teste, lista_de_clientes)
+            menu_caixa(estoque, historico, func_teste, lista_de_clientes, vendas_pausadas)
 
         elif escolha == 2:
-            menu_balcao(lista_de_orcamentos, lista_de_clientes, lista_de_funcionarios, estoque, historico, func_teste)
+            menu_balcao(lista_de_orcamentos, lista_de_clientes, lista_de_funcionarios, estoque, historico, func_teste, vendas_pausadas)
 
         elif escolha == 3:
             print("Saindo do sistema.")

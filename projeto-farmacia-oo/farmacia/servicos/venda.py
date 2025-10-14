@@ -154,12 +154,12 @@ class Venda:
             print("pagamento não pode ser processado para uma venda que não está ativa.")
             return False
 
-        if valor >= self.__valor_total:
+        if round(valor, 2) >= round(self.__valor_total, 2):
             print(f"Total da Venda: R$ {self.__valor_total:.2f}")
             print(f"Valor Pago: R${valor:.2f}")
             print(f"Forma: {forma}")
             if forma.lower() == 'dinheiro':
-                troco = valor - self.__valor_total
+                troco = round(valor, 2) - round(self.__valor_total, 2)
                 print(f"Troco: R${troco:.2f}")
             print("Pagamento APROVADO.")
             return True
