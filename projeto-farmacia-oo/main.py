@@ -65,9 +65,17 @@ def menu_caixa(estoque: Estoque, historico: HistoricoVendas, funcionario_logado:
 
             elif escolha == 0:
                 break
-        
+
         else:
-            venda_ativa = submenu_venda_ativa(venda_ativa, estoque, historico)
+            resultado_submenu = submenu_venda_ativa(venda_ativa, estoque, historico)
+
+            if resultado_submenu is None:
+                venda_ativa = None
+            elif resultado_submenu.status == "PAUSADA":
+                vendas_pausadas.append(resultado_submenu)
+                venda_ativa = None
+            else:
+                venda_ativa = resultado_submenu
 
 def menu_balcao(lista_de_orcamentos: list, lista_de_clientes: list, lista_de_funcionarios: list, estoque: Estoque, historico: HistoricoVendas, funcionario: Funcionario):
     while True:
@@ -841,7 +849,7 @@ def submenu_venda_ativa(venda_em_andamento: Venda, estoque: Estoque, historico: 
                 print("Nenhum produto com estoque para adicionar."); input("Pressione Enter..."); continue
 
             print("\n--- Produtos Disponíveis ---")
-            for produto in estoque.produtos:
+            for produto in produtos_disponiveis:
                 print(f"  Código: {produto.codigo.ljust(15)} | Nome: {produto.nome}")
 
             try:
@@ -872,6 +880,7 @@ def submenu_venda_ativa(venda_em_andamento: Venda, estoque: Estoque, historico: 
 
         elif escolha == 2:
             print("\n--- Remover Item da Venda ---")
+
             if not venda_em_andamento.itens:
                 print("A venda está vazia. Não há itens para remover.")
                 input("\nPressione Enter para continuar...")
@@ -879,7 +888,7 @@ def submenu_venda_ativa(venda_em_andamento: Venda, estoque: Estoque, historico: 
 
             print("\nItens na venda atual:")
             for i, item in enumerate(venda_em_andamento.itens):
-                print(f"  [{i + 1}] {item}")
+                print(f"[{i + 1}] {item}")
 
             try:
                 indice_remover = int(input("\nDigite o número do item a remover: "))
@@ -893,22 +902,70 @@ def submenu_venda_ativa(venda_em_andamento: Venda, estoque: Estoque, historico: 
                 else:
                     print("ERRO: Número de item inválido.")
             except ValueError:
-                print("ERRO: código inválido.")
+                print("ERRO: Entrada inválida. Digite apenas o número do item.")
+            input("\nPressione Enter para continuar...")
+
+        elif escolha == 3: 
+            print("\n--- Aplicar Desconto ---")
+            try:
+                percentual = float(input("Digite o percentual de desconto (ex: 10 para 10%): "))
+
+                venda_em_andamento.aplicar_desconto(percentual)
+            
+            except ValueError:
+                print("ERRO: Percentual inválido.")
+            
+            input("Pressione Enter para continuar...")
 
 
+        elif escolha == 4:
+            
+            venda_em_andamento.pausar_venda()
+            print(f"\nVenda pausada com sucesso.")
+            input("Pressione Enter para voltar ao menu do caixa...")
+            
+            return venda_em_andamento
+            
+        elif escolha == 5: 
+            confirmacao = input("Tem certeza que deseja cancelar esta venda em andamento? (s/n): ").lower()
 
-        elif escolha == 3:
-            # TODO: Lógica de Aplicar Desconto
-            pass
-        elif escolha == 4: # Pausar
-            # TODO: Lógica para pausar e SAIR do submenu
-            pass
-        elif escolha == 5: # Cancelar
-            # TODO: Lógica para cancelar e SAIR do submenu
-            pass
-        elif escolha == 6: # Finalizar
-            # TODO: Lógica para pagar, finalizar e SAIR do submenu
-            pass
+            if confirmacao == 's':
+                venda_em_andamento.cancelar_venda(estoque)
+                
+                input("\nPressione Enter para voltar ao menu do caixa...")
+                return None
+            else:
+                print("\nOperação de cancelamento abortada.")
+                input("Pressione Enter para continuar...")
+                
+        elif escolha == 6:
+            print("\n--- Finalizar Venda ---")
+
+            if not venda_em_andamento.itens:
+                print("ERRO: Impossível finalizar uma venda sem itens.")
+                input("Pressione Enter para continuar...")
+                continue 
+
+            print(f"Valor Total a Pagar: R$ {venda_em_andamento.valor_total:.2f}")
+            try:
+                forma_pagamento = input("Forma de pagamento (Dinheiro, Débito, Crédito): ")
+                valor_pago = float(input("Valor pago pelo cliente: R$ "))
+
+                pagamento_ok = venda_em_andamento.processar_pagamento(forma_pagamento, valor_pago)
+
+                if pagamento_ok:
+                    venda_em_andamento.finalizar_venda(estoque, historico)
+                    input("\n[SUCESSO] Venda finalizada. Pressione Enter para voltar ao menu do caixa...")
+                    return None
+                
+                else:
+                    print("\nPagamento não aprovado. A venda continua ativa.")
+
+            except ValueError:
+                print("ERRO: Valor pago inválido. Digite apenas um número.")
+            
+            input("Pressione Enter para continuar...")
+
         else:
             print("ERRO: Opção inválida."); input("Pressione Enter...")
 
