@@ -51,8 +51,6 @@ O sistema implementa mais de 40 métodos, cobrindo os seguintes casos de uso:
 * CRUD completo para Produtos, Clientes e Funcionários.
 * Criação de Orçamentos (com conversão para Venda).
 * Consulta de históricos de compras (por cliente) e de vendas (por funcionário).
-
-#### Módulo de Estoque
 * Gestão de Lotes com data de validade.
 * Lógica de baixa PEPS (Primeiro que Expira, Primeiro que Sai).
 * Registro de Perdas e Avarias.
